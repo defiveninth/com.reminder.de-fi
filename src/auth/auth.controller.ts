@@ -13,21 +13,33 @@ export class AuthController {
   async authWithCredentials(@Body() body: AuthCredentialsDto) {
     const { email, password } = body
 
-    if (password) {
-      const tokens = await this.authService.signInCredentials(email, password)
-      if (tokens) {
-        return tokens
-      } else {
-        throw new UnauthorizedException('Invalid credentials')
-      }
-    }
+    const userStatus = await this.authService.isExistUserWithEmail(email)
 
-    if (email && !password) {
+    if (!userStatus.isExists) {
       return this.authService.CreateNotVerifiedUser(email)
     }
 
-    throw new UnauthorizedException('Invalid request')
+    if (!password) {
+      if (userStatus.isVerified) {
+        return {
+          message: 'MP400'
+        }
+      } else {
+        return {
+          message: 'MV400'
+        }
+      }
+    }
+
+    const tokens = await this.authService.signInCredentials(email, password)
+
+    if (tokens) {
+      return tokens
+    } else {
+      throw new UnauthorizedException('Invalid credentials')
+    }
   }
+
 
   @Post('verify')
   @UsePipes(ValidationPipe)
@@ -67,5 +79,10 @@ export class AuthController {
   @Get()
   getUsers() {
     return this.authService.getUsers()
+  }
+
+  @Post('drop-table')
+  dropTable() {
+    return this.authService.dropTable()
   }
 }

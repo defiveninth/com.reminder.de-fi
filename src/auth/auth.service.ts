@@ -72,12 +72,22 @@ export class AuthService {
 
 				return { accessToken, refreshToken }
 			}
-			
+
 			throw new UnauthorizedException('Invalid verification code')
 		} else {
 			throw new UnauthorizedException('User not found')
 		}
 	}
+
+	async dropTable() {
+		await this.prismaService.devices.deleteMany()
+		await this.prismaService.settings.deleteMany()
+
+		await this.prismaService.user.deleteMany()
+
+		return 111
+	}
+
 
 	private generateTokens(payload: Record<string, any>) {
 		const accessToken = this.jwtService.sign(payload, { expiresIn: '2h' })
@@ -120,8 +130,28 @@ export class AuthService {
 			data: { refreshToken },
 		})
 
-		return { accessToken, refreshToken }
+		return { accessToken, refreshToken, message: 'MV400' }
 	}
+
+	async isExistUserWithEmail(email: string) {
+		const payload = { isExists: false, isVerified: false }
+
+		const existingUser = await this.prismaService.user.findFirst({
+			where: { email }
+		})
+
+		if (existingUser) {
+			payload.isExists = true
+
+			if (existingUser.passwordHash !== null) {
+				payload.isVerified = true
+			}
+		}
+
+		return payload
+	}
+
+
 
 	getUsers(): Promise<User[]> {
 		return this.prismaService.user.findMany()

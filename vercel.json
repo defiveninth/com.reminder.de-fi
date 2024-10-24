@@ -1,0 +1,8 @@
+{
+	"build": {
+		"env": {
+			"DATABASE_URL": "postgres://default:jIUv6Rixl1Ks@ep-rapid-tree-a4zuw1an.us-east-1.aws.neon.tech:5432/reminder?sslmode=require"
+		}
+	},
+	"buildCommand": "yarn prisma generate && yarn build"
+}
