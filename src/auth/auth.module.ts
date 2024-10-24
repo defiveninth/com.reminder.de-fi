@@ -8,7 +8,6 @@ import { PrismaService } from 'src/prisma/prisma.service'
   imports: [
     JwtModule.register({
       secret: 'secretKey',
-      signOptions: { expiresIn: '1m' },
     }),
   ],
   providers: [AuthService, PrismaService],

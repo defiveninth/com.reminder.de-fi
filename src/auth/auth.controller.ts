@@ -1,4 +1,5 @@
-import { Controller, Post, Body, UnauthorizedException, Get } from '@nestjs/common'
+import { Controller, Post, Body, UnauthorizedException, Get, UsePipes, ValidationPipe } from '@nestjs/common'
+import { AuthCredentialsDto, AuthGoogleDto, VerifyAccountDto } from './auth.pipes'
 import { AuthService } from './auth.service'
 
 @Controller('auth')
@@ -8,10 +9,11 @@ export class AuthController {
   ) { }
 
   @Post('credentials')
-  async authWithCredentials(@Body() body: { email: string; password?: string }) {
+  @UsePipes(ValidationPipe)
+  async authWithCredentials(@Body() body: AuthCredentialsDto) {
     const { email, password } = body
 
-    if (email && password) {
+    if (password) {
       const tokens = await this.authService.signInCredentials(email, password)
       if (tokens) {
         return tokens
@@ -21,48 +23,43 @@ export class AuthController {
     }
 
     if (email && !password) {
-      const message = this.authService.CreateNotVerifiedUser(email)
-      return { message }
+      return this.authService.CreateNotVerifiedUser(email)
     }
 
     throw new UnauthorizedException('Invalid request')
   }
 
-  @Post('credentials')
-  async verifyUser(@Body() body: { email: string; password: string, verifyCode: string }) {
+  @Post('verify')
+  @UsePipes(ValidationPipe)
+  async verifyUser(@Body() body: VerifyAccountDto) {
     const { email, password, verifyCode } = body
 
-    if (email && password && verifyCode) {
-      const tokens = await this.authService.verifyUser(email, password, verifyCode)
-      if (tokens) {
-        return tokens
-      } else {
-        throw new UnauthorizedException('Invalid credentials')
-      }
-    }
-
-    throw new UnauthorizedException('Invalid request')
-  }
-
-  @Post('google')
-  async authWithGoogle(@Body() body: { accessToken: string }) {
-    const { accessToken } = body
-
-    if (accessToken) {
-      // const tokens = await this.authService.validateUser()
-      // if (tokens) {
-      //   return tokens
+    const tokens = await this.authService.verifyUser(email, password, verifyCode)
+    if (tokens) {
+      return tokens
     } else {
       throw new UnauthorizedException('Invalid credentials')
     }
   }
 
+  @Post('google')
+  @UsePipes(ValidationPipe)
+  async authWithGoogle(@Body() body: AuthGoogleDto) {
+    const { accessToken } = body
+
+    // const tokens = await this.authService.authWithGoogle()
+    // return tokens
+    throw new UnauthorizedException('Invalid credentials')
+  }
+
   @Post('token/verify')
-  verifyToken(@Body() body: { accessToken: string }) {
+  @UsePipes(ValidationPipe)
+  verifyToken(@Body() body: AuthGoogleDto) {
     return this.authService.verifyToken(body.accessToken)
   }
 
   @Post('token/refresh')
+  @UsePipes(ValidationPipe)
   refreshToken(@Body() body: { refreshToken: string }) {
     return this.authService.refreshAccessToken(body.refreshToken)
   }

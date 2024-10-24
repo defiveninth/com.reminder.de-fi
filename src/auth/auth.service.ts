@@ -72,6 +72,8 @@ export class AuthService {
 
 				return { accessToken, refreshToken }
 			}
+			
+			throw new UnauthorizedException('Invalid verification code')
 		} else {
 			throw new UnauthorizedException('User not found')
 		}
@@ -110,9 +112,15 @@ export class AuthService {
 			}
 		})
 
-		return newUser
+		const payload = this.generatePayload(newUser)
+		const { accessToken, refreshToken } = this.generateTokens(payload)
 
+		await this.prismaService.user.update({
+			where: { email },
+			data: { refreshToken },
+		})
 
+		return { accessToken, refreshToken }
 	}
 
 	getUsers(): Promise<User[]> {
