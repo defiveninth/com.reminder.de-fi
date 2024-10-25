@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/
 import { genSalt, hash, compare } from 'bcryptjs'
 import { JwtService } from '@nestjs/jwt'
 import { PrismaService } from 'src/prisma/prisma.service'
-import { User, Prisma } from '@prisma/client'
+import { User } from '@prisma/client'
 
 @Injectable()
 export class AuthService {
@@ -150,8 +150,6 @@ export class AuthService {
 
 		return payload
 	}
-
-
 
 	getUsers(): Promise<User[]> {
 		return this.prismaService.user.findMany()
