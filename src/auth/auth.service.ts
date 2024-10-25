@@ -32,6 +32,37 @@ export class AuthService {
 		return { accessToken, refreshToken }
 	}
 
+	async authWithGoogle(AT: string): Promise<{ accessToken: string; refreshToken: string } | null> {
+		const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+			method: 'GET',
+			headers: {
+				Authorization: `Bearer ${AT}`,
+				'Content-Type': 'application/json',
+				Accept: 'application/json',
+			}
+		})
+		const userData = await response.json()
+
+		// const user = await this.prismaService.user.findFirst({
+		// 	where: { email },
+		// })
+
+		// if (!user || !(await this.comparePassword(password, user.passwordHash))) {
+		// 	throw new UnauthorizedException('Invalid email or password')
+		// }
+
+		// const payload = this.generatePayload(user)
+		// const accessToken = this.jwtService.sign(payload, { expiresIn: '2h' })
+		// const refreshToken = this.jwtService.sign(payload, { expiresIn: '30d' })
+
+		// await this.prismaService.user.update({
+		// 	where: { email: user.email },
+		// 	data: { refreshToken },
+		// })
+
+		return { accessToken: 'at', refreshToken: 'rt' }
+	}
+
 	async refreshAccessToken(refreshToken: string): Promise<{ accessToken: string }> {
 		const user = await this.prismaService.user.findFirst({
 			where: { refreshToken },
@@ -130,7 +161,7 @@ export class AuthService {
 			data: { refreshToken },
 		})
 
-		return { accessToken, refreshToken, message: 'MV400' }
+		return { accessToken, refreshToken, message: 'UC201' }
 	}
 
 	async isExistUserWithEmail(email: string) {

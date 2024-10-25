@@ -58,10 +58,11 @@ export class AuthController {
   @UsePipes(ValidationPipe)
   async authWithGoogle(@Body() body: AuthGoogleDto) {
     const { accessToken } = body
+    console.log(accessToken)
 
-    // const tokens = await this.authService.authWithGoogle()
-    // return tokens
-    throw new UnauthorizedException('Invalid credentials')
+    const tokens = await this.authService.authWithGoogle(accessToken)
+    return tokens
+    // throw new UnauthorizedException('Invalid credentials')
   }
 
   @Post('token/verify')
